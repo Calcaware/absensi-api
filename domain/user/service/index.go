@@ -138,15 +138,11 @@ func (s *UserService) GetAttendanceHistory(userID int) ([]entities.AttendanceEnt
 
 func calculateAttendanceStatus(createdAt int64) (string, error) {
 	const (
-		onTimeHour      = 7
+		onTimeStartHour = 7
 		onTimeEndHour   = 8
-		warningHour     = 8
-		warningMinute   = 30
-		absentStartHour = 7
-		absentEndHour   = 8
 	)
 
-	// Ubah waktu Unix epoch ke dalam objek waktu UTC
+	// Ubah waktu Unix epoch ke dalam objek waktu lokal
 	attendanceTime := time.Unix(createdAt, 0).UTC()
 
 	// Ubah waktu UTC ke dalam objek waktu "Asia/Jakarta"
@@ -156,14 +152,12 @@ func calculateAttendanceStatus(createdAt int64) (string, error) {
 	}
 	attendanceTime = attendanceTime.In(location)
 
-	if attendanceTime.Hour() < onTimeHour || (attendanceTime.Hour() == onTimeHour && attendanceTime.Minute() < warningMinute) {
+	fmt.Printf("CreatedAt Dari FMT: %v, AttendanceTime dari FMT: %v\n", createdAt, attendanceTime)
+
+	if attendanceTime.Hour() >= onTimeStartHour && attendanceTime.Hour() <= onTimeEndHour {
 		return "On-Time", nil
-	} else if attendanceTime.Hour() >= onTimeHour && attendanceTime.Hour() < onTimeEndHour {
-		return "Warning", nil
-	} else if attendanceTime.Hour() >= onTimeEndHour && attendanceTime.Hour() < absentEndHour {
+	} else if attendanceTime.Hour() > onTimeEndHour {
 		return "Late", nil
-	} else if attendanceTime.Hour() < absentStartHour {
-		return "Early", nil
 	} else {
 		return "", errors.New("Invalid attendance time")
 	}

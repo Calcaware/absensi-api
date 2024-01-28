@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"go-absen/domain/user"
 	"go-absen/entities"
 	"gorm.io/gorm"
@@ -75,11 +76,22 @@ func (r *UserRepository) GetAttendanceByDate(userID int, date string) (*entities
 	}
 	endOfDay := startOfDay.Add(24 * time.Hour)
 
+	// Gunakan zona waktu "Asia/Jakarta" pada saat pencarian
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("Searching for attendance between %v and %v\n", startOfDay.In(location), endOfDay.In(location))
+
 	if err := r.db.
-		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, startOfDay.Unix(), endOfDay.Unix()).
+		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, startOfDay.In(location).Unix(), endOfDay.In(location).Unix()).
 		First(&attendance).
 		Error; err != nil {
 		return nil, err
 	}
+
+	fmt.Printf("Found attendance at %v\n", time.Unix(attendance.CreatedAt, 0).In(location))
+
 	return &attendance, nil
 }

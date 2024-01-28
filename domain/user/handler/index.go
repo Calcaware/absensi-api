@@ -46,7 +46,7 @@ func (u userHandler) RecordAttendance(c *fiber.Ctx) error {
 
 	_, err = u.userService.RecordAttendance(userEntity.ID, latitude, longitude)
 	if err != nil {
-		return response.SendStatusInternalServerError(c, "failed to record attendance")
+		return response.SendStatusInternalServerError(c, "failed to record attendance"+err.Error())
 	}
 	return response.SendStatusOkResponse(c, "success record attendance")
 }
