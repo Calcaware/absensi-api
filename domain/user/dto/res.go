@@ -67,7 +67,7 @@ type TAttendanceResponse struct {
 	Latitude  float64        `json:"latitude"`
 	Longitude float64        `json:"longitude"`
 	CreatedAt time.Time      `json:"created_at"`
-	User      *TUserResponse `json:"user"` // Change the type to *TGetUserResponse
+	User      *TUserResponse `json:"user"`
 }
 
 func GetAttendanceResponse(attendance *entities.AttendanceEntity) *TAttendanceResponse {
@@ -76,7 +76,7 @@ func GetAttendanceResponse(attendance *entities.AttendanceEntity) *TAttendanceRe
 		UserID:    attendance.UserID,
 		Latitude:  attendance.Latitude,
 		Longitude: attendance.Longitude,
-		CreatedAt: attendance.CreatedAt,
+		CreatedAt: time.Unix(attendance.CreatedAt, 0), // Ubah epoch time ke objek waktu
 		User:      GetUserLocationResponse(&attendance.User),
 	}
 }
@@ -120,10 +120,10 @@ func MapToAttendanceHistoryResponse(u user.UserServiceInterface, attendances []e
 
 		responseData[i] = AttendanceHistoryResponse{
 			Location:  a.Location,
-			Date:      a.CreatedAt.Format("02 January 2006"),
-			Time:      a.CreatedAt.Format("15:04:05"),
+			Date:      time.Unix(a.CreatedAt, 0).Format("02 January 2006"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
+			Time:      time.Unix(a.CreatedAt, 0).Format("15:04:05"),        // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
 			Status:    a.Status,
-			Day:       a.CreatedAt.Format("Monday"),
+			Day:       time.Unix(a.CreatedAt, 0).Format("Monday"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
 			Latitude:  strconv.FormatFloat(a.Latitude, 'f', -1, 64),
 			Longitude: strconv.FormatFloat(a.Longitude, 'f', -1, 64),
 		}

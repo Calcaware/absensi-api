@@ -65,11 +65,11 @@ func (s *UserService) RecordAttendance(userID int, latitude, longitude float64) 
 		UserID:    userID,
 		Latitude:  latitude,
 		Longitude: longitude,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Unix(), // Menggunakan Unix epoch time
 	}
 
 	// Menetapkan status absensi berdasarkan jam
-	attendance.Status = calculateAttendanceStatus(attendance.CreatedAt.Hour(), attendance.CreatedAt.Minute())
+	attendance.Status = calculateAttendanceStatus(time.Now().Hour(), time.Now().Minute())
 
 	createdAttendance, err := s.repo.InsertAttendance(attendance)
 	if err != nil {

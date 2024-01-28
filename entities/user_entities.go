@@ -13,9 +13,9 @@ type UserEntity struct {
 	GenderID    int                `gorm:"column:gender_id" json:"gender_id"`
 	Gender      GenderEntity       `gorm:"foreignKey:GenderID" json:"gender"`
 	Birthdate   time.Time          `gorm:"column:birthdate" json:"birthdate"`
-	CreatedAt   time.Time          `gorm:"column:created_at;type:TIMESTAMP" json:"created_at"`
-	UpdatedAt   time.Time          `gorm:"column:updated_at;type:TIMESTAMP" json:"updated_at"`
-	DeletedAt   *time.Time         `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
+	CreatedAt   int64              `gorm:"column:created_at;type:bigint" json:"created_at"`
+	UpdatedAt   int64              `gorm:"column:updated_at;type:bigint" json:"updated_at"`
+	DeletedAt   *int64             `gorm:"column:deleted_at;type:TIMESTAMP NULL;index" json:"deleted_at"`
 	Attendances []AttendanceEntity `gorm:"foreignKey:UserID" json:"attendances"`
 }
 

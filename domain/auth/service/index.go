@@ -47,6 +47,7 @@ func (s *AuthService) Register(payload *dto.TRegisterRequest) (*entities.UserEnt
 		return nil, errors.New("error parsing birthdate")
 	}
 
+	createdAtUnix := time.Now().Unix()
 	newUser := &entities.UserEntity{
 		Fullname:  payload.Fullname,
 		NIK:       payload.NIK,
@@ -56,6 +57,7 @@ func (s *AuthService) Register(payload *dto.TRegisterRequest) (*entities.UserEnt
 		Address:   payload.Address,
 		GenderID:  payload.GenderID,
 		Password:  hashPassword,
+		CreatedAt: createdAtUnix,
 	}
 
 	user, err := s.repo.InsertUser(newUser)

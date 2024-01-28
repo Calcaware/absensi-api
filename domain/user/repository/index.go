@@ -4,6 +4,7 @@ import (
 	"go-absen/domain/user"
 	"go-absen/entities"
 	"gorm.io/gorm"
+	"time"
 )
 
 type UserRepository struct {
@@ -68,8 +69,14 @@ func (r *UserRepository) GetAttendanceHistory(userID int) ([]entities.Attendance
 
 func (r *UserRepository) GetAttendanceByDate(userID int, date string) (*entities.AttendanceEntity, error) {
 	var attendance entities.AttendanceEntity
+	startOfDay, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return nil, err
+	}
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
 	if err := r.db.
-		Where("user_id = ? AND DATE(created_at) = ?", userID, date).
+		Where("user_id = ? AND created_at >= ? AND created_at < ?", userID, startOfDay.Unix(), endOfDay.Unix()).
 		First(&attendance).
 		Error; err != nil {
 		return nil, err
