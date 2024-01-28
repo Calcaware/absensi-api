@@ -68,8 +68,8 @@ func (s *UserService) RecordAttendance(userID int, latitude, longitude float64) 
 		CreatedAt: time.Now().Unix(), // Menggunakan Unix epoch time
 	}
 
-	// Menetapkan status absensi berdasarkan jam
-	attendance.Status = calculateAttendanceStatus(time.Now().Hour(), time.Now().Minute())
+	// Menetapkan status absensi berdasarkan waktu absensi
+	attendance.Status = calculateAttendanceStatus(attendance.CreatedAt)
 
 	createdAttendance, err := s.repo.InsertAttendance(attendance)
 	if err != nil {
@@ -121,16 +121,19 @@ func (s *UserService) GetAttendanceHistory(userID int) ([]entities.AttendanceEnt
 	return attendances, nil
 }
 
-func calculateAttendanceStatus(hour, minute int) string {
+func calculateAttendanceStatus(createdAt int64) string {
 	const (
 		onTimeHour    = 8
 		warningHour   = 8
 		warningMinute = 30
 	)
 
-	if hour < onTimeHour || (hour == onTimeHour && minute < warningMinute) {
+	// Ubah waktu Unix epoch ke dalam objek waktu lokal
+	attendanceTime := time.Unix(createdAt, 0)
+
+	if attendanceTime.Hour() < onTimeHour || (attendanceTime.Hour() == onTimeHour && attendanceTime.Minute() < warningMinute) {
 		return "On-Time"
-	} else if hour == warningHour && minute >= warningMinute {
+	} else if attendanceTime.Hour() == warningHour && attendanceTime.Minute() >= warningMinute {
 		return "Warning"
 	} else {
 		return "Late"
