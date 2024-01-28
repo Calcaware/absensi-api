@@ -74,8 +74,17 @@ func (s *UserService) RecordAttendance(userID int, latitude, longitude float64) 
 		CreatedAt: time.Now().In(location).Unix(), // Menggunakan Unix epoch time di zona waktu "Asia/Jakarta"
 	}
 
-	// Menetapkan status absensi berdasarkan waktu absensi
-	attendance.Status = calculateAttendanceStatus(attendance.CreatedAt)
+	// Menetapkan status absensi berdasarkan waktu absensi (lokal)
+	status, err := calculateAttendanceStatus(attendance.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	if status == "Early" {
+		return nil, errors.New("Anda belum bisa absen pada hari ini, absen dimulai jam 7 pagi sampai jam 8 pagi")
+	}
+
+	attendance.Status = status
 
 	createdAttendance, err := s.repo.InsertAttendance(attendance)
 	if err != nil {
@@ -127,21 +136,35 @@ func (s *UserService) GetAttendanceHistory(userID int) ([]entities.AttendanceEnt
 	return attendances, nil
 }
 
-func calculateAttendanceStatus(createdAt int64) string {
+func calculateAttendanceStatus(createdAt int64) (string, error) {
 	const (
-		onTimeHour    = 8
-		warningHour   = 8
-		warningMinute = 30
+		onTimeHour      = 7
+		onTimeEndHour   = 8
+		warningHour     = 8
+		warningMinute   = 30
+		absentStartHour = 7
+		absentEndHour   = 8
 	)
 
-	// Ubah waktu Unix epoch ke dalam objek waktu lokal
-	attendanceTime := time.Unix(createdAt, 0)
+	// Ubah waktu Unix epoch ke dalam objek waktu UTC
+	attendanceTime := time.Unix(createdAt, 0).UTC()
+
+	// Ubah waktu UTC ke dalam objek waktu "Asia/Jakarta"
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return "", err
+	}
+	attendanceTime = attendanceTime.In(location)
 
 	if attendanceTime.Hour() < onTimeHour || (attendanceTime.Hour() == onTimeHour && attendanceTime.Minute() < warningMinute) {
-		return "On-Time"
-	} else if attendanceTime.Hour() == warningHour && attendanceTime.Minute() >= warningMinute {
-		return "Warning"
+		return "On-Time", nil
+	} else if attendanceTime.Hour() >= onTimeHour && attendanceTime.Hour() < onTimeEndHour {
+		return "Warning", nil
+	} else if attendanceTime.Hour() >= onTimeEndHour && attendanceTime.Hour() < absentEndHour {
+		return "Late", nil
+	} else if attendanceTime.Hour() < absentStartHour {
+		return "Early", nil
 	} else {
-		return "Late"
+		return "", errors.New("Invalid attendance time")
 	}
 }
