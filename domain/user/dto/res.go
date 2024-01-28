@@ -110,23 +110,29 @@ type AttendanceHistoryListResponse struct {
 
 func MapToAttendanceHistoryResponse(u user.UserServiceInterface, attendances []entities.AttendanceEntity) []AttendanceHistoryResponse {
 	responseData := make([]AttendanceHistoryResponse, len(attendances))
+
 	for i, a := range attendances {
 		location, err := u.GetLocationName(a.Latitude, a.Longitude)
 		if err != nil {
-			// Handle error
 			return nil
 		}
 		a.Location = location
 
+		loc, err := time.LoadLocation("Asia/Jakarta")
+		if err != nil {
+			return nil
+		}
+
 		responseData[i] = AttendanceHistoryResponse{
 			Location:  a.Location,
-			Date:      time.Unix(a.CreatedAt, 0).Format("02 January 2006"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
-			Time:      time.Unix(a.CreatedAt, 0).Format("15:04:05"),        // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
+			Date:      time.Unix(a.CreatedAt, 0).In(loc).Format("02 January 2006"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
+			Time:      time.Unix(a.CreatedAt, 0).In(loc).Format("15:04:05"),        // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
 			Status:    a.Status,
-			Day:       time.Unix(a.CreatedAt, 0).Format("Monday"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
+			Day:       time.Unix(a.CreatedAt, 0).In(loc).Format("Monday"), // Ubah epoch time ke objek waktu dan format sesuai kebutuhan
 			Latitude:  strconv.FormatFloat(a.Latitude, 'f', -1, 64),
 			Longitude: strconv.FormatFloat(a.Longitude, 'f', -1, 64),
 		}
 	}
+
 	return responseData
 }
