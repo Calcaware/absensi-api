@@ -61,11 +61,17 @@ func (s *UserService) RecordAttendance(userID int, latitude, longitude float64) 
 	}
 
 	// Jika user belum melakukan absensi pada hari yang sama, lanjutkan proses absensi
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		// Handle error jika gagal memuat zona waktu
+		return nil, err
+	}
+
 	attendance := &entities.AttendanceEntity{
 		UserID:    userID,
 		Latitude:  latitude,
 		Longitude: longitude,
-		CreatedAt: time.Now().Unix(), // Menggunakan Unix epoch time
+		CreatedAt: time.Now().In(location).Unix(), // Menggunakan Unix epoch time di zona waktu "Asia/Jakarta"
 	}
 
 	// Menetapkan status absensi berdasarkan waktu absensi
