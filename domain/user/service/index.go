@@ -162,3 +162,27 @@ func calculateAttendanceStatus(createdAt int64) (string, error) {
 		return "", errors.New("Invalid attendance time")
 	}
 }
+
+func (s *UserService) UpdateAvatar(userID int, avatar string) (*entities.UserEntity, error) {
+	user, err := s.repo.FindId(userID)
+	if err != nil {
+		return nil, errors.New("failed to get user")
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	userUpdateAvatar := &entities.UserEntity{
+		Avatar: avatar,
+	}
+
+	err = s.repo.UpdateUserAvatar(userID, userUpdateAvatar.Avatar)
+	if err != nil {
+		return nil, errors.New("failed to update user avatar")
+	}
+
+	user.Avatar = userUpdateAvatar.Avatar
+
+	return user, nil
+}

@@ -4,6 +4,7 @@ import "time"
 
 type UserEntity struct {
 	ID          int                `gorm:"column:id;primaryKey" json:"id"`
+	Avatar      string             `gorm:"column:avatar" json:"avatar"`
 	Fullname    string             `gorm:"column:fullname" json:"fullname"`
 	NIK         string             `gorm:"column:nik" json:"nik"`
 	Email       string             `gorm:"column:email" json:"email"`

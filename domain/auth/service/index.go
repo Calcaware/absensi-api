@@ -58,6 +58,7 @@ func (s *AuthService) Register(payload *dto.TRegisterRequest) (*entities.UserEnt
 		GenderID:  payload.GenderID,
 		Password:  hashPassword,
 		CreatedAt: createdAtUnix,
+		Avatar:    "https://res.cloudinary.com/dp6zyk7g0/image/upload/v1706508268/avatar/ykefnkchhlbvbnwodqwr.jpg",
 	}
 
 	user, err := s.repo.InsertUser(newUser)

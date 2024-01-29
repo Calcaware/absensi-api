@@ -18,10 +18,10 @@ func NewUserRepository(db *gorm.DB) user.UserRepositoryInterface {
 
 func (r *UserRepository) FindId(id int) (*entities.UserEntity, error) {
 	var user *entities.UserEntity
-	if err := r.db.Preload("Gender"). // Preload gender
-						Where("id = ? AND deleted_at IS NULL", id).
-						First(&user).
-						Error; err != nil {
+	if err := r.db.Preload("Gender").
+		Where("id = ? AND deleted_at IS NULL", id).
+		First(&user).
+		Error; err != nil {
 		return nil, err
 	}
 	return user, nil
@@ -94,4 +94,14 @@ func (r *UserRepository) GetAttendanceByDate(userID int, date string) (*entities
 	fmt.Printf("Found attendance at %v\n", time.Unix(attendance.CreatedAt, 0).In(location))
 
 	return &attendance, nil
+}
+
+func (r *UserRepository) UpdateUserAvatar(userID int, avatarPath string) error {
+	user := &entities.UserEntity{ID: userID}
+
+	result := r.db.Model(user).Updates(map[string]interface{}{"avatar": avatarPath})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

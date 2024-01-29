@@ -23,6 +23,10 @@ type database struct {
 }
 
 type cloudinary struct {
+	CCName      string
+	CCAPIKey    string
+	CCAPISecret string
+	CCFolder    string
 }
 
 func BootConfig() *Config {
@@ -75,6 +79,22 @@ func loadConfig() *Config {
 
 	if value, found := os.LookupEnv("DBNAME"); found {
 		res.Database.DbName = value
+	}
+
+	if value, found := os.LookupEnv("CCNAME"); found {
+		res.Cloudinary.CCName = value
+	}
+
+	if value, found := os.LookupEnv("CCAPIKEY"); found {
+		res.Cloudinary.CCAPIKey = value
+	}
+
+	if value, found := os.LookupEnv("CCAPISECRET"); found {
+		res.Cloudinary.CCAPISecret = value
+	}
+
+	if value, found := os.LookupEnv("CCFOLDER"); found {
+		res.Cloudinary.CCFolder = value
 	}
 
 	return res

@@ -17,6 +17,7 @@ func BootAuthRoute(app *fiber.App, handler auth.AuthHandlerInterface) {
 func BootUserRoute(app *fiber.App, handler user.UserHandlerInterface, jwtService jwt.IJwt, userService user.UserServiceInterface) {
 	userGroup := app.Group("api/user")
 	userGroup.Get("/me", authentication.Protected(jwtService, userService), handler.GetMe)
+	userGroup.Patch("/avatar", authentication.Protected(jwtService, userService), handler.UpdateAvatar)
 	userGroup.Post("/attendance", authentication.Protected(jwtService, userService), handler.RecordAttendance)
 	userGroup.Get("/attendance", authentication.Protected(jwtService, userService), handler.GetAttendanceHistory)
 }

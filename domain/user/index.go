@@ -13,6 +13,7 @@ type UserRepositoryInterface interface {
 	InsertAttendance(attendance *entities.AttendanceEntity) (*entities.AttendanceEntity, error)
 	GetAttendanceHistory(userID int) ([]entities.AttendanceEntity, error)
 	GetAttendanceByDate(userID int, date string) (*entities.AttendanceEntity, error)
+	UpdateUserAvatar(userID int, avatarPath string) error
 }
 
 type UserServiceInterface interface {
@@ -23,10 +24,12 @@ type UserServiceInterface interface {
 	GetAttendanceHistory(userID int) ([]entities.AttendanceEntity, error)
 	GetLocationName(latitude, longitude float64) (string, error)
 	UnmarshalResponseBody(response *http.Response, v interface{}) error
+	UpdateAvatar(userID int, avatar string) (*entities.UserEntity, error)
 }
 
 type UserHandlerInterface interface {
 	GetMe(c *fiber.Ctx) error
+	UpdateAvatar(c *fiber.Ctx) error
 	RecordAttendance(c *fiber.Ctx) error
 	GetAttendanceHistory(c *fiber.Ctx) error
 }

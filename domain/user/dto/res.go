@@ -9,6 +9,7 @@ import (
 
 type TGetUserResponse struct {
 	ID       int       `json:"id"`
+	Avatar   string    `json:"avatar"`
 	Fullname string    `json:"fullname"`
 	NIK      string    `json:"nik"`
 	Phone    string    `json:"phone"`
@@ -18,14 +19,24 @@ type TGetUserResponse struct {
 }
 
 func GetUserResponse(user *entities.UserEntity) *TGetUserResponse {
+	location, err := time.LoadLocation("Asia/Jakarta")
+	if err != nil {
+		return nil
+	}
+
+	nowUnix := time.Now().Unix()
+
+	nowInJakarta := time.Unix(nowUnix, 0).In(location)
+
 	userFormatter := &TGetUserResponse{
 		ID:       user.ID,
+		Avatar:   user.Avatar,
 		Fullname: user.Fullname,
 		NIK:      user.NIK,
 		Phone:    user.Phone,
 		Address:  user.Address,
 		Gender:   user.Gender.Name,
-		TimeNow:  time.Now(),
+		TimeNow:  nowInJakarta,
 	}
 
 	return userFormatter
@@ -49,7 +60,7 @@ func GetUserLocationResponse(user *entities.UserEntity) *TUserResponse {
 		NIK:       user.NIK,
 		Email:     user.Email,
 		Phone:     user.Phone,
-		Birthdate: user.Birthdate.Format("02-01-2006"), // Format sesuai dengan yang diminta
+		Birthdate: user.Birthdate.Format("02-01-2006"),
 		Address:   user.Address,
 		GenderID:  user.GenderID,
 	}
@@ -60,7 +71,6 @@ type TRecordAttendanceRequest struct {
 	Longitude string `json:"longitude" validate:"required"`
 }
 
-// TAttendanceResponse adalah DTO untuk respons satu entitas absensi
 type TAttendanceResponse struct {
 	ID        int            `json:"id"`
 	UserID    int            `json:"user_id"`
@@ -81,10 +91,8 @@ func GetAttendanceResponse(attendance *entities.AttendanceEntity) *TAttendanceRe
 	}
 }
 
-// TAttendanceHistoryResponse adalah DTO untuk respons riwayat absensi
 type TAttendanceHistoryResponse []*TAttendanceResponse
 
-// GetAttendanceHistoryResponse mengubah slice entitas absensi menjadi slice DTO respons
 func GetAttendanceHistoryResponse(attendances []entities.AttendanceEntity) TAttendanceHistoryResponse {
 	var responseList TAttendanceHistoryResponse
 	for _, attendance := range attendances {
@@ -135,4 +143,14 @@ func MapToAttendanceHistoryResponse(u user.UserServiceInterface, attendances []e
 	}
 
 	return responseData
+}
+
+type CreateImageFormatter struct {
+	Avatar string `json:"avatar"`
+}
+
+func UpdateAvatarResponse(user *entities.UserEntity) CreateImageFormatter {
+	response := CreateImageFormatter{}
+	response.Avatar = user.Avatar
+	return response
 }

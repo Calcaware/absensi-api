@@ -5,7 +5,9 @@ import (
 	"go-absen/domain/user"
 	"go-absen/domain/user/dto"
 	"go-absen/entities"
+	"go-absen/helper/cloudinary"
 	"go-absen/helper/response"
+	"mime/multipart"
 	"strconv"
 )
 
@@ -62,14 +64,42 @@ func (u userHandler) GetAttendanceHistory(c *fiber.Ctx) error {
 		return response.SendStatusInternalServerError(c, "failed to get attendance history")
 	}
 
-	// Menggunakan helper untuk mapping data ke dalam struct response
 	responseData := dto.MapToAttendanceHistoryResponse(u.userService, attendances)
 
-	// Menggunakan struct response terpisah
 	responseStruct := dto.AttendanceHistoryListResponse{
 		Message: "Attendance History",
 		Data:    responseData,
 	}
 
 	return response.SendStatusOkWithDataResponse(c, responseStruct.Message, responseStruct.Data)
+}
+
+func (u userHandler) UpdateAvatar(c *fiber.Ctx) error {
+	currentUser, ok := c.Locals("CurrentUser").(*entities.UserEntity)
+	if !ok || currentUser == nil {
+		return response.SendStatusUnauthorized(c, "User not found")
+	}
+
+	file, err := c.FormFile("avatar")
+	var uploadedURL string
+	if err == nil {
+		fileToUpload, err := file.Open()
+		if err != nil {
+			return response.SendStatusInternalServerError(c, "Failed open to open file: "+err.Error())
+		}
+		defer func(fileToUpload multipart.File) {
+			_ = fileToUpload.Close()
+		}(fileToUpload)
+		uploadedURL, err = cloudinary.Uploader(fileToUpload)
+		if err != nil {
+			return response.SendStatusInternalServerError(c, "Failed to upload image: "+err.Error())
+		}
+	}
+
+	image, err := u.userService.UpdateAvatar(currentUser.ID, uploadedURL)
+	if err != nil {
+		return response.SendStatusBadRequest(c, "Error upload image: "+err.Error())
+	}
+
+	return response.SendStatusOkWithDataResponse(c, "Success updating avatar", dto.UpdateAvatarResponse(image))
 }
